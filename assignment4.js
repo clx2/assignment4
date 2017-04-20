@@ -1,17 +1,63 @@
-// The anonymous function below will fire on page load
-
-// Some things to consider
-// $.ajax(); to make your requests a little easier. Or the vanilla js way, it's up to you.
-// $.on(); for event handling
-// Remember, selecting elements in jQuery is like selecting them in CSS
-// You'll probably have to manipulate some strings
-// some jQuery functions to help display results
-// $.show(), $.hide(), $.slideup(), $.slidedown(), $.fadein(), $.fadeout()
-// Add content from requests with something like
-// $.html(), $.text(), etc.
-// keyup events could be helpful to get value of field as the user types
-
 (function() {
   // Magic!
   console.log('Keepin\'n it clean with an external script!');
+
+  var input = $(".flexsearch-input").after("<ul class='flexsearch-results'></ul>");
+  var allResults = $(".flexsearch-results");
+  var data = [];
+
+  $.when(
+    $.getJSON( 'http://www.mattbowytz.com/simple_api.json?data=comics', function(response)
+    {
+      $.each(response, function(key, val)
+      {
+        if(val !== 12 && val !== 200 && val.length > 2)
+        {
+          data =  data.concat(val);
+        }
+      });
+    }),
+    $.getJSON( 'http://www.mattbowytz.com/simple_api.json?data=interests', function(response)
+    {
+      $.each( response, function(key, val)
+      {
+        if(val !== 9 && val !== 200 && val.length > 2)
+        {
+          data =  data.concat(val);
+        }
+      });
+    })
+  ).then(function()
+  {
+    for(var i = 0; i < data.length; i++)
+    {
+      data.sort();
+      allResults.append("<ul class='circle'> <li>" + data[i] + "</li></ul>");
+    }
+
+    input.on("keyup", function(event)
+    {
+      var search = input.val().toLowerCase();
+      var results = [];
+
+      for(var i = 0; i < data.length; i++)
+      {
+        var string = data[i].toLowerCase();
+        if(string.includes(search))
+        {
+          results.push(data[i]);
+        }
+      }
+
+      allResults.html("");
+
+      if(results.length)
+      {
+        for(i = 0; i < results.length; i++)
+        {
+          allResults.append("<ul class='circle'> <li>" + results[i] + "</li></ul>");
+        }
+      }
+    });
+  });
 })();
